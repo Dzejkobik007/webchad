@@ -1,0 +1,31 @@
+// ROOMS
+// return all available rooms
+GET /room
+
+// return specific room if available
+GET /room/{id}
+
+// send message
+PUT /room/{id}/message (*message, reply)
+
+// get messages
+GET /room/{id}/message (password)
+
+// USERS
+// create user
+POST /user/create (*username, *password)
+
+// login user
+POST /user/login (*username, *password)
+
+// return logged user info (if any)
+GET /user
+
+// return user info
+GET /user/{id}
+
+
+
+
+
+
