@@ -54,7 +54,7 @@ class MessageGateway {
         }    
     }
 
-    public function insert(Array $input)
+    public function insert(Array $input, int $roomId)
     {
         $statement = "
             INSERT INTO message 
@@ -65,11 +65,14 @@ class MessageGateway {
 
         try {
             $statement = $this->db->prepare($statement);
+            error_log($input['text']);
+            error_log($input['sender']);
+            error_log($roomId);
             $statement->execute(array(
                 'text' => $input['text'],
                 'sender'  => $input['sender'],
                 'reply' => $input['reply'] ?? null,
-                'room' => $input['room'],
+                'room' => $roomId,
                 'file' => $input['file'] ?? null,
             ));
             return $statement->rowCount();

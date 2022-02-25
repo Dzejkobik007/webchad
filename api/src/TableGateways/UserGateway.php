@@ -28,7 +28,7 @@ class UserGateway {
         }
     }
 
-    public function find($id)
+    public function findId($id)
     {
         $statement = "
             SELECT 
@@ -41,6 +41,27 @@ class UserGateway {
         try {
             $statement = $this->db->prepare($statement);
             $statement->execute(array($id));
+            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+            return $result;
+        } catch (\PDOException $e) {
+            exit($e->getMessage());
+        }    
+    }
+
+    public function findName($name)
+    {
+        $statement = "
+            SELECT 
+                id, name, password, picture
+            FROM
+                user
+            WHERE name = ?
+            LIMIT 1;
+        ";
+
+        try {
+            $statement = $this->db->prepare($statement);
+            $statement->execute(array($name));
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
             return $result;
         } catch (\PDOException $e) {

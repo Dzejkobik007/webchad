@@ -10,18 +10,37 @@ class RoomGateway {
         $this->db = $db;
     }
 
-    public function findAll()
+    public function findAll($userId = null)
     {
-        $statement = "
-            SELECT 
-                id, name, owner
-            FROM
-                room
-            WHERE visible = 1;
-        ";
 
+        if (isset($userId)) {
+            $statement = "
+                SELECT 
+                    id, name, owner, visible 
+                FROM room 
+                WHERE 
+                visible = 0 
+                AND owner = $userId 
+                OR visible = 1;
+            ";
+        } else {
+            $statement = "
+                SELECT 
+                    id, name, owner
+                FROM
+                    room
+                WHERE visible = 1;
+            ";
+        }
         try {
-            $statement = $this->db->query($statement);
+            $statement = $this->db->prepare($statement);
+            $status = $statement->execute();
+            if (!$status){
+                error_log("Mysql query returned: ".var_export($status, true)."!!");
+                error_log(var_export($statement, true));
+                error_log($statement->error_get_last());
+                return $status;
+            }
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
             return $result;
         } catch (\PDOException $e) {
