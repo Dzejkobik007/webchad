@@ -100,20 +100,22 @@ class UserController
 
     public function loginUser()
     {
-        if (!isset($_POST["username"]) || !isset($_POST["password"])) {
+        if (!isset($_POST["username"])) {
+            $this->unprocessableEntityResponse();
+        } elseif (!isset($_POST["password"])) {
             $this->unprocessableEntityResponse();
         } else {
             $username = $_POST["username"];
             $password = $_POST["password"];
-            $input["devicename"] = $_POST["devicename"] ?? "Device-".rand(1000, 9999);
+            $input["devicename"] = $_POST["devicename"] ?? "Device-" . rand(1000, 9999);
+            $result = $this->userGateway->findName($username);
         }
-        $result = $this->userGateway->findName($username);
         if (!$result) {
             return false;
         }
         if (password_verify($password, $result[0]["password"])) {
             $input["userid"] = $result[0]["id"];
-            
+
             if ($result = $this->deviceController->registerDevice($input)) {
                 $response['status_code_header'] = 'HTTP/1.1 200 OK';
                 $response['body'] = json_encode($result);

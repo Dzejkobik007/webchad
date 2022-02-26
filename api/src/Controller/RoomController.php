@@ -66,7 +66,13 @@ class RoomController
 
     private function getMessages($roomId)
     {
-        $result = $this->messageGateway->findAll($roomId);
+        
+        $limit = $_GET['limit'] ?? 100;
+        $fromid = $_GET['fromid'] ?? 0;
+        $result = $this->messageGateway->findAll($roomId, $limit, $fromid);
+        if (is_bool($result) && !$result) {
+            return $this->unprocessableEntityResponse();
+        }
         $response['status_code_header'] = 'HTTP/1.1 200 OK';
         $response['body'] = json_encode($result);
         return $response;
@@ -86,10 +92,16 @@ class RoomController
     private function createMessage()
     {
         $input = (array) json_decode(file_get_contents('php://input'), TRUE);
+        error_log(var_export($input));
+        $input["sender"] = $this->auth['user'];
+        $input["room"] = $this->roomId;
         if (!$this->validateMessage($input)) {
             return $this->unprocessableEntityResponse();
         }
-        $this->messageGateway->insert($input, $this->roomId);
+        $result = $this->messageGateway->insert($input);
+        if (!$result) {
+            return $this->notFoundResponse();
+        }
         $response['status_code_header'] = 'HTTP/1.1 201 Created';
         $response['body'] = null;
         return $response;
@@ -169,10 +181,10 @@ class RoomController
         return true;
     }
 
-    // (*text, *sender, reply, *room, file)
+    // (*message, *sender, reply, *room, file)
     private function validateMessage($input)
     {
-        if (!isset($input['text'])) {
+        if (!isset($input['message'])) {
             return false;
         }
         if (!isset($input['sender'])) {

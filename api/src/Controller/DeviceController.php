@@ -86,7 +86,6 @@ class DeviceController
             $result = null;
             $result["state"] = false;
         }
-        error_log(var_export($result, true));
         return $result;
     }
 
