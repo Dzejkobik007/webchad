@@ -95,6 +95,7 @@ class DeviceGateway {
             ));
             if (!$status){
                 error_log("Mysql query returned: ".var_export($status, true)."!!");
+                error_log(var_export($input, true));
                 error_log(var_export($statement, true));
                 return $status;
             }

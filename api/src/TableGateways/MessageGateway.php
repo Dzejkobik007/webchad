@@ -10,23 +10,24 @@ class MessageGateway {
         $this->db = $db;
     }
 
-    public function findAll($roomId, $limit = 100)
+    public function findAll($roomId, $limit = 100, $fromid = 0)
     {
         $statement = "
-            SELECT 
-                id, text, sender, reply, room, file
-            FROM
-                message;
-            WHERE room = :room; 
-            LIMIT :limit;
+            SELECT message.id, message.text, user.name as 'sender', message.reply, message.room, message.file, message.created
+            FROM message 
+            JOIN user 
+            ON user.id=message.sender 
+            WHERE room = $roomId AND message.id > $fromid ORDER BY message.created DESC LIMIT $limit;
         ";
-
         try {
             $statement = $this->db->prepare($statement);
-            $statement->execute(array(
-                'room' => $roomId,
-                'limit' => $limit,
-            ));
+            $status = $statement->execute();
+            if (!$status){
+                error_log("Mysql query returned: ".var_export($status, true)."!!");
+                error_log(var_export($statement, true));
+                error_log(var_export($statement->errorInfo(), true));
+                return $status;
+            }
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
             return $result;
         } catch (\PDOException $e) {
@@ -54,7 +55,7 @@ class MessageGateway {
         }    
     }
 
-    public function insert(Array $input, int $roomId)
+    public function insert(Array $input)
     {
         $statement = "
             INSERT INTO message 
@@ -62,19 +63,22 @@ class MessageGateway {
             VALUES
                 (:text, :sender, :reply, :room, :file);
         ";
-
         try {
             $statement = $this->db->prepare($statement);
-            error_log($input['text']);
-            error_log($input['sender']);
-            error_log($roomId);
-            $statement->execute(array(
-                'text' => $input['text'],
+            $status = $statement->execute(array(
+                'text' => $input['message'],
                 'sender'  => $input['sender'],
                 'reply' => $input['reply'] ?? null,
-                'room' => $roomId,
+                'room' => $input['room'],
                 'file' => $input['file'] ?? null,
             ));
+            if (!$status){
+                error_log("Mysql query returned: ".var_export($status, true)."!!");
+                error_log(var_export($input, true));
+                error_log(var_export($statement, true));
+                error_log(var_export($statement->errorInfo(), true));
+                return $status;
+            }
             return $statement->rowCount();
         } catch (\PDOException $e) {
             exit($e->getMessage());
@@ -87,7 +91,7 @@ class MessageGateway {
             UPDATE message
             SET 
                 text = :text,
-                sender  = :sender,
+                sender = :sender,
                 reply = :reply,
                 room = :room
                 file = :file
