@@ -79,6 +79,8 @@ function authenticate()
     global $deviceController;
     if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
         return $deviceController->checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    } else {
+        return array('state' => 'false');
     }
 }
 
