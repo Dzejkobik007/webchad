@@ -1,11 +1,10 @@
 ## INSTALL COMMANDS ##
 
-`git clone https://github.com/Dzejkobik007/webchad`
-
-`cd webchad/api`
-
-`composer install`
-
+```sh
+git clone https://github.com/Dzejkobik007/webchad
+cd webchad/api
+composer install
+```
 Document root must be set to `/path/to/webchad/api/public`
 
 ## TEMPLATE/EXAMPLE API ##
